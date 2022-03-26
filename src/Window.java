@@ -19,6 +19,7 @@ public class Window extends Application{
     // main method to launch the window
     public static void main(String[] args) {
         launch(args);
+
     }
 
 }
