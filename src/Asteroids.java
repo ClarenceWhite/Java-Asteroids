@@ -34,6 +34,10 @@ public class Asteroids extends Element {
         this.angularMomentum = 0.5 - r.nextDouble();
     }
 
+    public int getFlag(){
+        return this.flag;
+    }
+
     @Override
     public void move() {
         super.move();
