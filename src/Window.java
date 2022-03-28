@@ -20,6 +20,7 @@ public class Window extends Application{
         Pane pane = new Pane();
         pane.setPrefSize(WIDTH, HEIGHT);
 
+        Ship ship = new Ship(WIDTH / 2, HEIGHT / 2);
         List<Asteroids> asteroids = new ArrayList<Asteroids>();
 
         for (int i = 0; i < 10; i++) {
@@ -31,6 +32,7 @@ public class Window extends Application{
         for (Asteroids asteroid:asteroids) {
             pane.getChildren().add(asteroid.getElement());
         }
+        pane.getChildren().add(ship.getElement());
 
         new AnimationTimer() {
 

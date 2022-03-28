@@ -6,15 +6,15 @@ public class Asteroids extends Element {
     private double angularMomentum;
 
     // flag == 3 -> large
-    // Size: each side are between 10 and 20
+    // Size: flag * 3 + r.nextDouble(2)) * 3
     // Speed: within 3 in each direction
     //
     // flag == 2 -> medium
-    // Size: each side are between 5 and 10
+    // Size: flag * 3 + r.nextDouble(2)) * 3
     // Speed: from 3 to 6 in each direction
     //
     // flag == 1 -> small
-    // Size: each side are between 0 and 5
+    // Size: flag * 3 + r.nextDouble(2)) * 3
     // Speed: from 6 to 9 in each direction
 
     public Asteroids(int x, int y, int flag) {
