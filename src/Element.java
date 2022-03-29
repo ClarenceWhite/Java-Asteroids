@@ -21,8 +21,20 @@ public class Element extends Polygon {
     }
 
     public void move() {
-        this.polygon.setTranslateX((this.polygon.getTranslateX() + this.movement.getX()) % Window.WIDTH);
-        this.polygon.setTranslateY((this.polygon.getTranslateY() + this.movement.getY()) % Window.HEIGHT);
+        double new_x = this.polygon.getTranslateX() + this.movement.getX();
+        double new_y = this.polygon.getTranslateY() + this.movement.getY();
+        if(new_x < 0) {
+            new_x += Window.WIDTH;
+        } else if (new_x > Window.WIDTH) {
+            new_x = new_x % Window.WIDTH;
+        }
+        if(new_y < 0) {
+            new_y += Window.HEIGHT;
+        } else if (new_y > Window.HEIGHT) {
+            new_y = new_y % Window.HEIGHT;
+        }
+        this.polygon.setTranslateX(new_x);
+        this.polygon.setTranslateY(new_y);
     }
 
     // Apply a given force with horizontal and vertical components.

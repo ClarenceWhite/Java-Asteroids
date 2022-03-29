@@ -31,6 +31,7 @@ public class Asteroids extends Element {
             super.applyForce(r.nextInt(-3, 3), r.nextInt(-3, 3));
         }
 
+        this.flag = flag;
         this.angularMomentum = 0.5 - r.nextDouble();
     }
 

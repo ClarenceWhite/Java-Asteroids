@@ -71,7 +71,7 @@ public class Window extends Application{
                     ship.accelerate();
                 }
 
-                if (pressedKeys.getOrDefault(KeyCode.SPACE, false)) {
+                if (pressedKeys.getOrDefault(KeyCode.SPACE, false) && bullets.size() < 50) {
                     Bullet bullet = new Bullet((int)ship.getElement().getTranslateX(), (int)ship.getElement().getTranslateY());
                     bullet.getElement().setRotate(ship.getElement().getRotate());
                     bullets.add(bullet);
@@ -99,13 +99,23 @@ public class Window extends Application{
                             .filter(asteroid -> asteroid.collide(bullet))
                             .collect(Collectors.toList());
 
+                    if(collisions.size() != 0) {
+                        bullets.remove(bullet);
+                        pane.getChildren().remove(bullet.getElement());
+                    }
                     collisions.stream().forEach(collided -> {
-//                        if(collided.getFlag() != 1) {
-//                            asteroids.add(new Asteroids((int)collided.getElement().getTranslateX(),
-//                                    (int)collided.getElement().getTranslateY(), collided.getFlag() - 1));
-//                            asteroids.add(new Asteroids((int)collided.getElement().getTranslateX(),
-//                                    (int)collided.getElement().getTranslateY(), collided.getFlag() - 1));
-//                        }
+                        if(collided.getFlag() == 3 || collided.getFlag() == 2) {
+                            Asteroids left_child = new Asteroids((int)collided.getElement().getTranslateX(),
+                                    (int)collided.getElement().getTranslateY(), collided.getFlag() - 1);
+                            asteroids.add(left_child);
+                            left_child.getElement().setStroke(Color.WHITE);
+                            pane.getChildren().add(left_child.getElement());
+                            Asteroids right_child = new Asteroids((int)collided.getElement().getTranslateX(),
+                                    (int)collided.getElement().getTranslateY(), collided.getFlag() - 1);
+                            asteroids.add(right_child);
+                            right_child.getElement().setStroke(Color.WHITE);
+                            pane.getChildren().add(right_child.getElement());
+                        }
                         asteroids.remove(collided);
                         pane.getChildren().remove(collided.getElement());
                     });
