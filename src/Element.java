@@ -46,7 +46,7 @@ public class Element extends Polygon {
     // Apply a given force with horizontal and vertical components.
     public void applyForce(double x, double y) {
         this.movement = this.movement.add(x * 0.3, y * 0.3);
-        System.out.println(this.movement);
+        // System.out.println(this.movement);
     }
 
     // Apply a thrust on the facing direction
