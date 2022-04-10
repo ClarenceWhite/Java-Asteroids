@@ -9,6 +9,8 @@ public class Element extends Polygon {
     // The actual storage representation of the coordinates is left to the subclass.
     private Point2D movement;
     private Polygon polygon;
+    private int lives;
+
     //constructor for the class 'Element'
     public Element(Polygon polygon, int x, int y) {
         this.polygon = polygon;
@@ -16,6 +18,7 @@ public class Element extends Polygon {
         this.polygon.setTranslateY(y);
 
         this.movement = new Point2D(0,0);
+        this.lives = 1;
     }
 
     public Polygon getElement() {
@@ -70,5 +73,15 @@ public class Element extends Polygon {
     public boolean collide(Element other) {
         Shape collisionArea = Shape.intersect(this.polygon, other.getElement());
         return collisionArea.getBoundsInLocal().getWidth() != -1;
+    }
+
+    public int getLives() {return this.lives;}
+
+    public void lossLive() {
+        this.lives--;
+    }
+
+    protected void setLives(int live) {
+        this.lives = live;
     }
 }

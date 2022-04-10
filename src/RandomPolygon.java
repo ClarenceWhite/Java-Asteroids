@@ -26,7 +26,6 @@ public class RandomPolygon {
             int change = r.nextInt(5) - 2;
             polygon.getPoints().set(i, polygon.getPoints().get(i) + change);
         }
-
         return polygon;
     }
 }
