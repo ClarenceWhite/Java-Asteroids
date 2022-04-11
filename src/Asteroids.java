@@ -1,3 +1,4 @@
+import java.util.ArrayList;
 import java.util.Random;
 
 public class Asteroids extends Element {
@@ -38,6 +39,13 @@ public class Asteroids extends Element {
     // a getter to get flag(the size) of the asteroid
     public int getFlag(){
         return this.flag;
+    }
+    //get position of asteroids
+    public ArrayList<Double> getXY () {
+        ArrayList<Double> position = new ArrayList<>();
+        position.add(this.getElement().getTranslateX());
+        position.add(this.getElement().getTranslateY());
+        return position;
     }
 
     @Override
