@@ -1,6 +1,9 @@
+package asteroids.main;
+
 import javafx.geometry.Point2D;
 import javafx.scene.shape.Polygon;
 import javafx.scene.shape.Shape;
+
 
 
 public class Element extends Polygon {
@@ -11,7 +14,7 @@ public class Element extends Polygon {
     private Polygon polygon;
     private int lives;
 
-    //constructor for the class 'Element'
+    //constructor for the class 'asteroids.main.Element'
     public Element(Polygon polygon, int x, int y) {
         this.polygon = polygon;
         this.polygon.setTranslateX(x);
@@ -81,7 +84,7 @@ public class Element extends Polygon {
         this.lives--;
     }
 
-    protected void setLives(int live) {
+    public void setLives(int live) {
         this.lives = live;
     }
 }

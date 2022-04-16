@@ -1,3 +1,5 @@
+package asteroids.main;
+
 import java.util.Random;
 import javafx.scene.shape.Polygon;
 

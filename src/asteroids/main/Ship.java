@@ -1,8 +1,9 @@
+package asteroids.main;
+
 import javafx.scene.shape.Polygon;
 
 import java.util.ArrayList;
 import java.util.Random;
-import java.util.TimerTask;
 
 public class Ship extends Element{
     Random r = new Random();

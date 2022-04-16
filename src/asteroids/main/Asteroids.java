@@ -1,3 +1,5 @@
+package asteroids.main;
+
 import java.util.ArrayList;
 import java.util.Random;
 
@@ -20,7 +22,7 @@ public class Asteroids extends Element {
 
     //constructor for the asteroids class
     public Asteroids(int x, int y, int flag) {
-        super(new RandomPolygon().createPolygon(flag), x , y); //from super class Element create a new polygon
+        super(new RandomPolygon().createPolygon(flag), x , y); //from super class asteroids.main.Element create a new polygon
 
         Random r = new Random(); //random
         super.getElement().setRotate(r.nextInt(360)); //set a rotation angle for new asteroids

@@ -1,50 +1,190 @@
+package asteroids.main;
+
 import javafx.animation.AnimationTimer;
+import javafx.animation.ScaleTransition;
+import javafx.animation.TranslateTransition;
 import javafx.application.Application;
 import javafx.application.Platform;
+import javafx.scene.Node;
+import javafx.scene.Parent;
 import javafx.scene.Scene;
+import javafx.scene.control.TextInputDialog;
+import javafx.scene.effect.DropShadow;
+import javafx.scene.image.Image;
+import javafx.scene.image.ImageView;
 import javafx.scene.input.KeyCode;
 import javafx.scene.layout.Pane;
+import javafx.scene.layout.TilePane;
+import javafx.scene.layout.VBox;
 import javafx.scene.paint.Color;
+import javafx.scene.shape.Line;
+import javafx.scene.shape.Rectangle;
 import javafx.scene.text.Font;
 import javafx.scene.text.Text;
 import javafx.stage.Stage;
+import javafx.util.Duration;
+import javafx.util.Pair;
+
+import javax.swing.*;
+import java.awt.*;
+import java.awt.event.ActionEvent;
+import java.io.*;
 import java.util.*;
+import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
 
-import static java.lang.Thread.*;
 
 public class Window extends Application{
-    //override class method 'start' to create a new window for the game
+    private String name = userName();
+    private Stage stage;
+    private Scene scene1; //scene1 for menu
+    private Scene scene2; //scene2 for game
+    private Scene scene3; //scene3 for showing high score
+
     public static final int WIDTH = 1280;
     public static final int HEIGHT = 720;
     private static int level = 1;
 
+    private Pane pane = new Pane(); // pane
+    private Pane pane2 = new Pane(); //pane2
+    private Pane pane3 = new Pane(); //pane3
+    private VBox menuBox = new VBox(-5);
+    private Line line;
+
+    private List<Pair<String, Runnable>> menuData = Arrays.asList(
+            new Pair<String, Runnable>("Start Game", () -> {PlayGame();}),
+            new Pair<String, Runnable>("High Score", () -> {showHighScore();}),
+            new Pair<String, Runnable>("Exit", Platform::exit)
+    );
+    //add menu contents to the pane
+    private Parent createContent() {
+        addBackground();
+        addTitle();
+
+        double lineX = WIDTH / 2 - 100;
+        double lineY = HEIGHT / 3 + 50;
+
+        addLine(lineX, lineY);
+        addMenu(lineX + 5, lineY + 5);
+
+        startAnimation();
+
+        return pane;
+    }
+    //add background to the menu pane
+    private void addBackground() {
+        ImageView imageView = new ImageView(new Image(getClass().getResource("background.png").toExternalForm()));
+        imageView.setFitWidth(WIDTH);
+        imageView.setFitHeight(HEIGHT);
+
+        pane.getChildren().add(imageView);
+    }
+    //add title to the menu pane
+    private void addTitle() {
+        Title title = new Title("ASTEROIDS");
+        title.setTranslateX(WIDTH / 2 - title.getTitleWidth() / 2);
+        title.setTranslateY(HEIGHT / 3);
+
+        pane.getChildren().add(title);
+    }
+    //add an animation line to the menu pane
+    private void addLine(double x, double y) {
+        line = new Line(x, y, x, y + 150);
+        line.setStrokeWidth(3);
+        line.setStroke(Color.color(1, 1, 1, 0.75));
+        line.setEffect(new DropShadow(5, Color.BLACK));
+        line.setScaleY(0);
+
+        pane.getChildren().add(line);
+    }
+    //let the line animating
+    private void startAnimation() {
+        ScaleTransition st = new ScaleTransition(Duration.seconds(1), line);
+        st.setToY(1);
+        st.setOnFinished(e -> {
+
+            for (int i = 0; i < menuBox.getChildren().size(); i++) {
+                Node n = menuBox.getChildren().get(i);
+
+                TranslateTransition tt = new TranslateTransition(Duration.seconds(1 + i * 0.15), n);
+                tt.setToX(0);
+                tt.setOnFinished(e2 -> n.setClip(null));
+                tt.play();
+            }
+        });
+        st.play();
+    }
+    //add menu buttons
+    private void addMenu(double x, double y) {
+        menuBox.setTranslateX(x);
+        menuBox.setTranslateY(y);
+        menuData.forEach(data -> {
+            menuItem item = new menuItem(data.getKey());
+            item.setOnAction(data.getValue());
+            item.setTranslateX(-300);
+
+            Rectangle clip = new Rectangle(300, 30);
+            clip.translateXProperty().bind(item.translateXProperty().negate());
+
+            item.setClip(clip);
+
+            menuBox.getChildren().addAll(item);
+        });
+
+        pane.getChildren().add(menuBox);
+    }
+
+
+
+    //start method of class Application
     @Override
-    public void start(Stage stage){
+    public void start(Stage primaryStage) throws Exception{
+        stage = primaryStage;
+        stage.setTitle("Asteroids");
 
-        Pane pane = new Pane(); //Create new pane
-        pane.setPrefSize(WIDTH, HEIGHT); //set pane size
+        scene1 = new Scene(createContent());
 
-        AtomicInteger points = new AtomicInteger();
+        stage.setScene(scene1); //set the menu scene as default
+        stage.show();
+    }
+
+
+    //play game method
+    private Parent PlayGame() {
+        ImageView imageView = new ImageView(new Image(getClass().getResource("game_bg.png").toExternalForm()));
+        imageView.setFitWidth(WIDTH);
+        imageView.setFitHeight(HEIGHT);
+        pane2.getChildren().add(imageView);
+        pane2.toFront();
+        scene2 = new Scene(pane2); //add pane to the scene
+        System.out.println("start game clicked... from start method");
+        pane2.setPrefSize(WIDTH, HEIGHT); //set pane size
+        AtomicInteger points = new AtomicInteger(); //points counter
+        String[] highPoints = {""}; //high score counter
 
         Text text = new Text(10, 20, "Points: 0");
         Text textLevel = new Text(10, 50, "Level: 1");
+        Text HighScore = new Text(10, 80, "High Score:");
         Text health = new Text(WIDTH - 90, 20, "Lives: 3");
         Text alert = new Text(WIDTH/2-80,50, "");
 
-        pane.getChildren().add(health);
+        pane2.getChildren().add(health);
         health.setFill(Color.WHITE);
         health.setFont(new Font(24));
 
-        pane.getChildren().add(text);
+        pane2.getChildren().add(HighScore);
+        HighScore.setFill(Color.WHITE);
+        HighScore.setFont(new Font(24));
+
+        pane2.getChildren().add(text);
         text.setFill(Color.WHITE);
         text.setFont(new Font(24));
 
-        pane.getChildren().add(textLevel);
+        pane2.getChildren().add(textLevel);
         textLevel.setFill(Color.WHITE);
         textLevel.setFont(new Font(24));
 
-        pane.getChildren().add(alert);
+        pane2.getChildren().add(alert);
         alert.setFill(Color.GREEN);
         alert.setFont(new Font(32));
 
@@ -57,26 +197,28 @@ public class Window extends Application{
         Random r = new Random(); //random
         Asteroids asteroid = new Asteroids(r.nextInt(WIDTH / 3), r.nextInt(HEIGHT), r.nextInt(3) + 1); //randomly create different sizes of asteroids
         asteroids.add(asteroid); //add asteroids
-        pane.getChildren().add(asteroid.getElement()); //add the asteroid to the screen
+        pane2.getChildren().add(asteroid.getElement()); //add the asteroid to the screen
         asteroid.getElement().setStroke(Color.WHITE); // set the stroke color of the asteroid to white
 
         Ship ship = new Ship(WIDTH / 2, HEIGHT / 2); //initialize the ship at the center of the window
-        pane.getChildren().add(ship.getElement()); // add a spaceship to the screen
+        pane2.getChildren().add(ship.getElement()); // add a spaceship to the screen
         ship.getElement().setStroke(Color.WHITE); //set color of spaceship
 
         Alien alien = new Alien(r.nextInt(50,100), r.nextInt(50,HEIGHT-50)); //initialize an alien ship
         alien.setLives(0); //initialize alien live to 0
 
-        Scene scene = new Scene(pane); //add a scene to the pane
-        scene.setFill(Color.BLACK); // set background color to black
-        stage.setScene(scene); //set scene to stage
+        scene2.setRoot(pane2);
+        stage.setScene(scene2); //set scene to stage
         stage.show(); //show stage
 
         HashMap<KeyCode, Boolean> pressedKeys = new HashMap<KeyCode, Boolean>(); //hashmap store KeyCode and Boolean pairs
-        scene.setOnKeyPressed(event -> pressedKeys.put(event.getCode(), Boolean.TRUE)); //key pressed
-        scene.setOnKeyReleased(event -> pressedKeys.put(event.getCode(), Boolean.FALSE)); //key released
-
-
+        scene2.setOnKeyPressed(event -> pressedKeys.put(event.getCode(), Boolean.TRUE)); //key pressed
+        scene2.setOnKeyReleased(event -> pressedKeys.put(event.getCode(), Boolean.FALSE)); //key released
+        //replace the high score with recorded high score
+        if(highPoints[0].equals("")) {
+            highPoints[0] = getHighScore();
+            HighScore.setText("High Score: " + highPoints[0]);
+        }
         //The class AnimationTimer allows to create a timer, that is called in each frame while it is active.
         //An extending class has to override the method handle(long) which will be called in every frame.
         // The methods start() and stop() allow to start and stop the timer.
@@ -87,19 +229,18 @@ public class Window extends Application{
             int alienFlag = 0; //a flag for alien ship appearing
             double lastAlienBullet = 0; //a timer for fire shooting speed of alien
 
-
-
             @Override
             public void handle(long now) {
                 //if user ship runs out of live
                 if(ship.getLives() <= 0) {
                     alert.setFill(Color.RED);
                     alert.setText("Game Over!!");
+                    checkScore(points, highPoints);
                     stop();
                 }
                 //left key to rotate angle by -5 degree
                 if(pressedKeys.getOrDefault(KeyCode.LEFT, false)) {
-                    ship.rotate( -5);
+                    ship.rotate(-5);
                 }
                 //right key to rotate angle by 5 degree
                 if(pressedKeys.getOrDefault(KeyCode.RIGHT, false)) {
@@ -114,9 +255,9 @@ public class Window extends Application{
                     if (System.currentTimeMillis() - lastPressH > 1000) {
                         ArrayList<Double> shipsnewXY = shipNewXY();
                         if (!positions.contains(shipsnewXY)) { //check if a new random place has conflict with any asteroids or alien
-                            pane.getChildren().remove(ship.getElement());  //remove the user ship from pane
+                            pane2.getChildren().remove(ship.getElement());  //remove the user ship from pane
                             ship.setXY(shipsnewXY.get(0), shipsnewXY.get(1));
-                            pane.getChildren().add(ship.getElement());  //remove the user ship from pane
+                            pane2.getChildren().add(ship.getElement());  //remove the user ship from pane
                         }
                         lastPressH = System.currentTimeMillis();
                     }
@@ -127,8 +268,8 @@ public class Window extends Application{
                         Bullet bullet = new Bullet((int) ship.getElement().getTranslateX(), (int) ship.getElement().getTranslateY()); //bullet used the position of ship
                         bullet.getElement().setRotate(ship.getElement().getRotate());//bullets used the direction of ship
                         bullets.add(bullet);// generate bullet
-                        pane.getChildren().add(bullet.getElement()); // display bullet on the pane
-                        bullet.getElement().setFill(Color.ORANGERED); // set color of bullet
+                        pane2.getChildren().add(bullet.getElement()); // display bullet on the pane
+                        bullet.getElement().setFill(Color.rgb(255,69,0)); // set color of bullet
                         bullet.applyForce( // call applyForce method to give speed to the bullet
                                 Math.cos(Math.toRadians(ship.getElement().getRotate())) * 10,
                                 Math.sin(Math.toRadians(ship.getElement().getRotate())) * 10);
@@ -142,7 +283,7 @@ public class Window extends Application{
                 //select a random time to generate alien ship, and make it move
                 if (System.currentTimeMillis()-startTime > r.nextInt(10000, 100000) && alienFlag == 0) {
                     alien.setLives(1); //set live for alien ship
-                    pane.getChildren().add(alien.getElement()); //add alien ship to pane
+                    pane2.getChildren().add(alien.getElement()); //add alien ship to pane
                     alien.getElement().setStroke(Color.WHITE);  //set color of alien ship
                     aliens.add(alien); //add alien to alien list
                     alienFlag++; // alienFlag increment
@@ -185,8 +326,8 @@ public class Window extends Application{
 
                     bullets.add(alienBullet); //add alien bullet to general bullet list
                     alienBullets.add(alienBullet); // also add alien bullet to alien bullet list
-                    pane.getChildren().add(alienBullet.getElement()); // add alien bullet to pane
-                    alienBullet.getElement().setFill(Color.BLUE); // set color of alien bullet
+                    pane2.getChildren().add(alienBullet.getElement()); // add alien bullet to pane
+                    alienBullet.getElement().setFill(Color.rgb(0,135,255)); // set color of alien bullet
                     alienBullet.applyForce(
                             Math.cos(Math.toRadians(alienBullet.getElement().getRotate())) * 10,
                             Math.sin(Math.toRadians(alienBullet.getElement().getRotate())) * 10);
@@ -200,16 +341,16 @@ public class Window extends Application{
                 if (alien.travelDistance() > WIDTH-110 && alien.getLives() != 0) {
                     System.out.println("alien travel and disappear");
                     alien.setLives(0);
-                    pane.getChildren().remove(alien.getElement());
+                    pane2.getChildren().remove(alien.getElement());
                 }
 
                 //check if there is collision between user ship and alien bullets
                 for (Bullet alienBullet: alienBullets) {
                     if (ship.collide(alienBullet) && alienBullet.getLives() != 0) {
-                        pane.getChildren().remove(ship.getElement());  //remove the user ship from pane
+                        pane2.getChildren().remove(ship.getElement());  //remove the user ship from pane
                         System.out.println("User hits with alien bullet!");
                         alienBullet.setLives(0);
-                        pane.getChildren().remove(alienBullet.getElement());
+                        pane2.getChildren().remove(alienBullet.getElement());
                         //place the user ship to another safe place
                         ArrayList<Double> shipsnewXY = shipNewXY(); //get a new place
                         if (!positions.contains(shipsnewXY)) { //check if a new random place has conflict with any asteroids or alien
@@ -220,7 +361,7 @@ public class Window extends Application{
                                 e.printStackTrace();
                             }
                             ship.setXY(shipsnewXY.get(0), shipsnewXY.get(1));
-                            pane.getChildren().add(ship.getElement());  //remove the user ship from pane
+                            pane2.getChildren().add(ship.getElement());  //remove the user ship from pane
                         };
                         ship.setLives(ship.getLives()-1);
                         health.setText("Lives: " + ship.getLives());
@@ -232,7 +373,7 @@ public class Window extends Application{
                     positions.clear();
                     positions.add(asteroid.getXY()); //add current asteroids position to positions list
                     if (ship.collide(asteroid) && asteroid.getLives() != 0) {
-                        pane.getChildren().remove(ship.getElement());  //remove the user ship from pane
+                        pane2.getChildren().remove(ship.getElement());  //remove the user ship from pane
                         System.out.println("User hits with asteroids!");
                         //place the user ship to another safe place
                         ArrayList<Double> shipsnewXY = shipNewXY(); //get a new place
@@ -244,13 +385,13 @@ public class Window extends Application{
                                 e.printStackTrace();
                             }
                             ship.setXY(shipsnewXY.get(0), shipsnewXY.get(1));
-                            pane.getChildren().add(ship.getElement());  //remove the user ship from pane
+                            pane2.getChildren().add(ship.getElement());  //remove the user ship from pane
                         };
                         ship.setLives(ship.getLives()-1); //decrease live
                         health.setText("Lives: " + ship.getLives());
                     }
 
-                    }
+                }
 
 
                 //check if there is collision between all the bullets and asteroids
@@ -264,14 +405,14 @@ public class Window extends Application{
                         System.out.println("alien hit by user!");
                         bullet.setLives(0);
                         alien.setLives(0);
-                        pane.getChildren().remove(alien.getElement());
-                        pane.getChildren().remove(bullet.getElement());
+                        pane2.getChildren().remove(alien.getElement());
+                        pane2.getChildren().remove(bullet.getElement());
                         text.setText("Points: " + points.addAndGet(200)); // add points 200 for shooting the alien
                     }
                     // check if bullets have traveled for a certain distance and whether they'd be removed
                     if (bullet.shouldRemove() && bullet.getLives() != 0){
                         bullet.setLives(0); //remove bullet's live
-                        pane.getChildren().remove(bullet.getElement()); // remove bullet from pane
+                        pane2.getChildren().remove(bullet.getElement()); // remove bullet from pane
                     }
 
                     if(bullet.getLives() != 0) {
@@ -282,7 +423,7 @@ public class Window extends Application{
 
                         if (collisions.size() != 0 && bullet.getLives() != 0) { //if the collision list is not empty
                             bullet.setLives(0); //remove the bullet's live that hit the asteroid
-                            pane.getChildren().remove(bullet.getElement()); //remove the bullet from the pane
+                            pane2.getChildren().remove(bullet.getElement()); //remove the bullet from the pane
                         }
                         //iterate through the collision list
                         collisions.forEach(collided -> { //for each asteroid which has collided with a bullet
@@ -292,17 +433,17 @@ public class Window extends Application{
                                         (int) collided.getElement().getTranslateY(), collided.getFlag() - 1);
                                 asteroids.add(left_child); //create a new asteroid which is one size smaller than the broken one
                                 left_child.getElement().setStroke(Color.WHITE);
-                                pane.getChildren().add(left_child.getElement());
+                                pane2.getChildren().add(left_child.getElement());
                                 //create a right child
                                 Asteroids right_child = new Asteroids((int) collided.getElement().getTranslateX(),
                                         (int) collided.getElement().getTranslateY(), collided.getFlag() - 1); //create another new asteroid which is one size smaller than the broken one
                                 asteroids.add(right_child);
                                 right_child.getElement().setStroke(Color.WHITE);
-                                pane.getChildren().add(right_child.getElement());
+                                pane2.getChildren().add(right_child.getElement());
                             }
                             text.setText("Points: " + points.addAndGet(100)); // add points
                             collided.setLives(0); //remove collided asteroids' live
-                            pane.getChildren().remove(collided.getElement()); //remove asteroids from pane
+                            pane2.getChildren().remove(collided.getElement()); //remove asteroids from pane
                         });
                     }
                 }
@@ -311,10 +452,10 @@ public class Window extends Application{
                 if (checkAsteroids(asteroids) && (alien.getLives() == 0 || checkAlien(aliens)) && ship.getLives() > 0) {
                     //remove bullets from both general bullet list and alien bullets list, and the screen as well
                     for (Bullet bullet: bullets) {
-                        pane.getChildren().remove(bullet.getElement());
+                        pane2.getChildren().remove(bullet.getElement());
                     }
                     for (Bullet bullet: alienBullets) {
-                        pane.getChildren().remove(bullet.getElement());
+                        pane2.getChildren().remove(bullet.getElement());
                     }
                     bullets.clear();
                     alienBullets.clear();
@@ -328,7 +469,7 @@ public class Window extends Application{
                     for (int i = 0; i < level; i++) {
                         Asteroids asteroid = new Asteroids(r.nextInt(WIDTH / 3), r.nextInt(HEIGHT), r.nextInt(3) + 1); //randomly create different sizes of asteroids
                         asteroids.add(asteroid); //add asteroids
-                        pane.getChildren().add(asteroid.getElement());
+                        pane2.getChildren().add(asteroid.getElement());
                         asteroid.getElement().setStroke(Color.WHITE);
                     }
                     textLevel.setText("Level : " + level);
@@ -339,6 +480,8 @@ public class Window extends Application{
                 }
             }
         }.start();
+//        checkScore(points, highPoints);
+        return pane2;
     }
 
     //method to check if all the asteroids have removed by the user
@@ -350,6 +493,7 @@ public class Window extends Application{
         }
         return true;
     }
+
     //method to check if there is alien in alien list
     public boolean checkAlien (ArrayList<Alien> alien) {
         if (alien.size() == 0) {
@@ -357,6 +501,7 @@ public class Window extends Application{
         }
         return false;
     }
+
     //method to generate a new position
     public ArrayList<Double> shipNewXY () {
         Random r = new Random();
@@ -366,7 +511,117 @@ public class Window extends Application{
         return shipNewXY;
     }
 
+    //get high score method
+    public String getHighScore() {
+        System.out.println("calling get high score method ...");
+        FileReader readFile = null;
+        BufferedReader reader = null;
+        try {
+            readFile = new FileReader("highscore.dat");
+            reader = new BufferedReader(readFile);
+            return reader.readLine();
+        }
+        catch (Exception e) {
+            return "null:0";
+        }
+        finally {
+            try {
+                if (reader != null){
+                    reader.close();
+                }
+            }
+            catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
+    }
 
+    //check the score and see if we need to save it
+    public void checkScore(AtomicInteger points, String[] highPoints) {
+        System.out.println("calling checkScore method ...");
+        if(highPoints[0].equals("")){
+            System.out.println("not changed");
+            return;
+        }
+        if(points.get() > Integer.parseInt(getHighScore().split(":")[1])) {
+            System.out.println("get high score");
+            highPoints[0] = name + ":" + points.get();
+
+            File scoreFile = new File("highscore.dat");
+            if(!scoreFile.exists()) {
+                try {
+                    System.out.println("creating new file.");
+                    scoreFile.createNewFile();
+                }
+                catch (IOException e) {
+                    e.printStackTrace();
+                }
+            }
+
+            FileWriter writeFile = null;
+            BufferedWriter writer = null;
+            try {
+                writeFile = new FileWriter(scoreFile);
+                writer = new BufferedWriter(writeFile);
+                writer.write(highPoints[0]);
+            }
+            catch (Exception e) {
+                e.printStackTrace();
+            }
+            finally {
+                try {
+                    if(writer != null) {
+                        writer.close();
+                    }
+                }
+                catch (Exception e) {
+                    e.printStackTrace();
+                }
+            }
+        }
+    }
+
+    //input name function
+    public String userName() {
+        //Before play the game, let the user input his/her name
+        TextInputDialog dialog = new TextInputDialog();
+        dialog.setTitle("Input your name");
+        dialog.setHeaderText("Input your name");
+        dialog.setContentText("Please input your name here: ");
+        Optional<String> result = dialog.showAndWait();
+        result.ifPresent(name -> System.out.println("Your name: " + name));
+        return result.get();
+    }
+
+    //method to create contents for high score page
+    public Parent showHighScore() {
+        System.out.println(getHighScore().split(":")[1]);
+        //set background for high score page
+        ImageView imageView = new ImageView(new Image(getClass().getResource("honor.jpeg").toExternalForm()));
+        imageView.setFitWidth(WIDTH);
+        imageView.setFitHeight(HEIGHT);
+        pane3.getChildren().add(imageView);
+
+        //set title
+        Title title1 = new Title("Highest Score");
+        title1.setTranslateX(WIDTH / 2 - title1.getTitleWidth() / 2);
+        title1.setTranslateY(HEIGHT / 3);
+        Title title2 = new Title(getHighScore().split(":")[0]);
+        title2.setTranslateX(WIDTH/2-title2.getTitleWidth()/2);
+        title2.setTranslateY(HEIGHT/3 + 100);
+        Title title3 = new Title(getHighScore().split(":")[1]);
+        title3.setTranslateX(WIDTH/2-title3.getTitleWidth()/2);
+        title3.setTranslateY(HEIGHT/3 + 200);
+        pane3.getChildren().add(title3);
+        pane3.getChildren().add(title2);
+        pane3.getChildren().add(title1);
+
+        scene3 = new Scene(pane3);
+        stage.setScene(scene3);
+        stage.show();
+
+        return pane3;
+    }
 
     // main method to launch the window
     public static void main(String[] args) {
@@ -374,6 +629,3 @@ public class Window extends Application{
     }
 
 }
-
-
-

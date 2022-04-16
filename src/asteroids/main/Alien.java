@@ -1,3 +1,5 @@
+package asteroids.main;
+
 import javafx.scene.shape.Polygon;
 
 import java.util.ArrayList;
