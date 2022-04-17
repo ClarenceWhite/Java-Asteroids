@@ -5,17 +5,17 @@ import javafx.animation.ScaleTransition;
 import javafx.animation.TranslateTransition;
 import javafx.application.Application;
 import javafx.application.Platform;
+import javafx.geometry.Pos;
 import javafx.scene.Node;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
+import javafx.scene.control.Button;
 import javafx.scene.control.TextInputDialog;
 import javafx.scene.effect.DropShadow;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.input.KeyCode;
-import javafx.scene.layout.Pane;
-import javafx.scene.layout.TilePane;
-import javafx.scene.layout.VBox;
+import javafx.scene.layout.*;
 import javafx.scene.paint.Color;
 import javafx.scene.shape.Line;
 import javafx.scene.shape.Rectangle;
@@ -33,9 +33,8 @@ import java.util.*;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
 
-
 public class Window extends Application{
-    private String name = userName();
+    private String name = userName(); //record user name
     private Stage stage;
     private Scene scene1; //scene1 for menu
     private Scene scene2; //scene2 for game
@@ -48,14 +47,16 @@ public class Window extends Application{
     private Pane pane = new Pane(); // pane
     private Pane pane2 = new Pane(); //pane2
     private Pane pane3 = new Pane(); //pane3
-    private VBox menuBox = new VBox(-5);
+    private VBox menuBox = new VBox(-5); //menu box one for menu page
     private Line line;
 
-    private List<Pair<String, Runnable>> menuData = Arrays.asList(
+    private List<Pair<String, Runnable>> menuData = Arrays.asList(  //menuData one for menu page
             new Pair<String, Runnable>("Start Game", () -> {PlayGame();}),
             new Pair<String, Runnable>("High Score", () -> {showHighScore();}),
             new Pair<String, Runnable>("Exit", Platform::exit)
     );
+
+
     //add menu contents to the pane
     private Parent createContent() {
         addBackground();
@@ -393,7 +394,6 @@ public class Window extends Application{
 
                 }
 
-
                 //check if there is collision between all the bullets and asteroids
                 for (Bullet bullet:bullets) {
                     //check if user's bullets collided with alien ship
@@ -441,7 +441,12 @@ public class Window extends Application{
                                 right_child.getElement().setStroke(Color.WHITE);
                                 pane2.getChildren().add(right_child.getElement());
                             }
-                            text.setText("Points: " + points.addAndGet(100)); // add points
+                            if (alienBullets.contains(bullet)) {
+                                System.out.println("alien's bullet hit the asteroid, do not count points");  //if the alien's bullet hit the asteroids
+                            }
+                            else {
+                                text.setText("Points: " + points.addAndGet(100)); // add points if the user's bullet hit asteroids
+                            }
                             collided.setLives(0); //remove collided asteroids' live
                             pane2.getChildren().remove(collided.getElement()); //remove asteroids from pane
                         });
@@ -536,7 +541,7 @@ public class Window extends Application{
         }
     }
 
-    //check the score and see if we need to save it
+    //check the score and see if we need to save it as high score
     public void checkScore(AtomicInteger points, String[] highPoints) {
         System.out.println("calling checkScore method ...");
         if(highPoints[0].equals("")){
@@ -595,14 +600,23 @@ public class Window extends Application{
 
     //method to create contents for high score page
     public Parent showHighScore() {
-        System.out.println(getHighScore().split(":")[1]);
         //set background for high score page
         ImageView imageView = new ImageView(new Image(getClass().getResource("honor.jpeg").toExternalForm()));
         imageView.setFitWidth(WIDTH);
         imageView.setFitHeight(HEIGHT);
         pane3.getChildren().add(imageView);
 
-        //set title
+        //start a new game button
+        javafx.scene.control.Button button = new Button("Start a New Game");
+        HBox buttonBox = new HBox(button);
+        buttonBox.setLayoutX(WIDTH/2-50);
+        buttonBox.setLayoutY(HEIGHT-200);
+        button.setOnAction(actionEvent -> {
+            PlayGame();
+        });
+        pane3.getChildren().add(buttonBox);
+
+        //set titles and contents
         Title title1 = new Title("Highest Score");
         title1.setTranslateX(WIDTH / 2 - title1.getTitleWidth() / 2);
         title1.setTranslateY(HEIGHT / 3);

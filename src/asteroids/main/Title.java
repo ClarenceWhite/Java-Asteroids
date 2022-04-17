@@ -16,7 +16,7 @@ public class Title extends Pane {
         }
 
         title = new Text(spread);
-        title.setFont(Font.loadFont(Title.class.getResource("ChrustyRock-ORLA.ttf").toExternalForm(), 48));
+        title.setFont(Font.loadFont(Title.class.getResource("title_font.otf").toExternalForm(), 48));
         title.setFill(Color.WHITE);
         title.setEffect(new DropShadow(30,Color.BLACK));
 

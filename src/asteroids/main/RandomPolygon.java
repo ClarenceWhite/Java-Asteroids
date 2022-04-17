@@ -8,7 +8,7 @@ public class RandomPolygon {
     //The formula to calculate out different shapes of pentagons is: https://mathworld.wolfram.com/Pentagon.html
     public Polygon createPolygon(int flag) {
         Random r = new Random();
-        double size = (flag * 3 + r.nextDouble(2)) * 3; //set the size of pentagon/asteroid
+        double size = (flag * 3 + r.nextDouble(2)) * 6; //set the size of pentagon/asteroid
         //set variables according to the formula
         Polygon polygon = new Polygon();
         double c1 = Math.cos(Math.PI * 2 / 5);
