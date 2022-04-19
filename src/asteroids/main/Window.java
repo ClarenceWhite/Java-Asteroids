@@ -39,6 +39,7 @@ public class Window extends Application{
     private Scene scene1; //scene1 for menu
     private Scene scene2; //scene2 for game
     private Scene scene3; //scene3 for showing high score
+    private Scene scene4; //scene4 for user instrucition
 
     public static final int WIDTH = 1280;
     public static final int HEIGHT = 720;
@@ -47,12 +48,14 @@ public class Window extends Application{
     private Pane pane = new Pane(); // pane
     private Pane pane2 = new Pane(); //pane2
     private Pane pane3 = new Pane(); //pane3
+    private Pane pane4 = new Pane(); //pane4
     private VBox menuBox = new VBox(-5); //menu box one for menu page
     private Line line;
 
     private List<Pair<String, Runnable>> menuData = Arrays.asList(  //menuData one for menu page
             new Pair<String, Runnable>("Start Game", () -> {PlayGame();}),
             new Pair<String, Runnable>("High Score", () -> {showHighScore();}),
+            new Pair<String, Runnable>("How to Play", () -> {showInstruction();}),
             new Pair<String, Runnable>("Exit", Platform::exit)
     );
 
@@ -63,7 +66,7 @@ public class Window extends Application{
         addTitle();
 
         double lineX = WIDTH / 2 - 100;
-        double lineY = HEIGHT / 3 + 50;
+        double lineY = HEIGHT / 3 + 60;
 
         addLine(lineX, lineY);
         addMenu(lineX + 5, lineY + 5);
@@ -635,6 +638,52 @@ public class Window extends Application{
         stage.show();
 
         return pane3;
+    }
+
+    public Parent showInstruction() {
+        //set background for instruction page
+        ImageView imageView = new ImageView(new Image(getClass().getResource("instruction_bg.jpeg").toExternalForm()));
+        imageView.setFitWidth(WIDTH);
+        imageView.setFitHeight(HEIGHT);
+        pane4.getChildren().add(imageView);
+
+        //start a new game button
+        javafx.scene.control.Button button = new Button("Start a New Game");
+        HBox buttonBox = new HBox(button);
+        buttonBox.setLayoutX(WIDTH/2-50);
+        buttonBox.setLayoutY(HEIGHT-100);
+        button.setOnAction(actionEvent -> {
+            PlayGame();
+        });
+        pane4.getChildren().add(buttonBox);
+
+        //set titles and contents
+        Title title1 = new Title("How to play");
+        title1.setTranslateX(WIDTH / 2 - title1.getTitleWidth() / 2);
+        title1.setTranslateY(HEIGHT / 5);
+        Title title2 = new Title("Use LEFT and RIGHT to rotate");
+        title2.setTranslateX(WIDTH/2-title2.getTitleWidth()/2);
+        title2.setTranslateY(HEIGHT/5 + 100);
+        Title title3 = new Title("Use UP to apply thrust");
+        title3.setTranslateX(WIDTH/2-title3.getTitleWidth()/2);
+        title3.setTranslateY(HEIGHT/5 + 200);
+        Title title4 = new Title("Use H to hyperspace jump");
+        title4.setTranslateX(WIDTH/2-title3.getTitleWidth()/2);
+        title4.setTranslateY(HEIGHT/5 + 300);
+        Title title5 = new Title("Use SPACE to fire");
+        title5.setTranslateX(WIDTH/2-title3.getTitleWidth()/2);
+        title5.setTranslateY(HEIGHT/5 + 400);
+        pane4.getChildren().add(title5);
+        pane4.getChildren().add(title4);
+        pane4.getChildren().add(title3);
+        pane4.getChildren().add(title2);
+        pane4.getChildren().add(title1);
+
+        scene4 = new Scene(pane4);
+        stage.setScene(scene4);
+        stage.show();
+
+        return pane4;
     }
 
     // main method to launch the window
